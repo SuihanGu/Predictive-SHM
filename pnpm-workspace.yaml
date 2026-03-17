@@ -1,0 +1,3 @@
+# Monorepo 工作区：前端包
+packages:
+  - "frontend"

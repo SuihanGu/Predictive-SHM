@@ -1,0 +1,31 @@
+# Predictive-SHM: Frontend + Backend (optional one-shot run)
+# Usage: docker-compose up -d
+# Frontend: http://localhost:3000  (dev) or build and serve static
+# Backend:  http://localhost:4999
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "4999:4999"
+    volumes:
+      - ./backend/models:/app/models:ro
+      - ./backend/sample_data:/app/sample_data:ro
+    environment:
+      - PORT=4999
+      - SHM_API_BASE_URL=${SHM_API_BASE_URL:-http://139.159.136.213:4999/iem/shm}
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_BASE=http://localhost:4999
+    restart: unless-stopped

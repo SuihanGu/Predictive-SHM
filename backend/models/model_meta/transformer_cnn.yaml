@@ -1,0 +1,30 @@
+# Transformer-CNN 模型元数据示例（可插拔预测模块 — 见 docs/可插拔预测模型修改方案.md）
+id: transformer_cnn
+type: timeseries
+label: Transformer-CNN 裂缝预测
+description: 针对测缝计训练的裂缝时序预测(PyTorch)，仅适用于裂缝预测
+
+capabilities:
+  min_time_steps: 110   # lag + m
+  max_pred_steps: 6
+  supports_uncertainty: false
+  target_sensor_types: [crack]
+
+input:
+  target_dim: 3
+  covariate_dim: 2
+  use_static_meta: false
+  time_interval_minutes: 10
+
+output:
+  format: standard
+  default_pred_steps: 6
+
+adapter: TransformerCNNAdapter
+path: models/best_crack_model.pth
+scaler_path: models/scaler_all.pkl
+response_scaler_path: models/scaler_response.pkl
+target_sensor: crack
+input_dim: 17
+output_dim: 3
+pred_steps: 6

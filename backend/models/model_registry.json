@@ -1,0 +1,23 @@
+{
+  "models": [
+    {
+      "id": "transformer_cnn",
+      "_comment": "Unique model id used by API (model_name) and UI selection.",
+      "type": "transformer_cnn",
+      "_comment_type": "Model family/type tag (kept for compatibility; not used for dynamic dispatch).",
+      "label": "Transformer-CNN Crack Forecasting",
+      "description": "Time-series forecasting model (PyTorch) trained for crack meters only. Not applicable to other sensor types unless retrained.",
+      "adapter": "TransformerCNNAdapter",
+      "_comment_adapter": "Adapter class name used by the backend registry factory.",
+      "path": "models/best_crack_model.pth",
+      "scaler_path": "models/scaler_all.pkl",
+      "response_scaler_path": "models/scaler_response.pkl",
+      "target_sensor": "crack",
+      "input_dim": 17,
+      "output_dim": 3,
+      "pred_steps": 6,
+      "_comment_meta_file": "Optional metadata file (JSON). Its contents are merged into this config for capabilities/requirements.",
+      "meta_file": "models/model_meta/transformer_cnn.json"
+    }
+  ]
+}

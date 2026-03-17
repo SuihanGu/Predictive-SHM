@@ -1,0 +1,72 @@
+{
+  "sensor_types": [
+    {
+      "key": "settlement",
+      "file": "settlement.csv",
+      "label": "水准仪",
+      "unit": "mm",
+      "channels": ["settlement_1", "settlement_2", "settlement_3", "settlement_4"],
+      "role": "aux"
+    },
+    {
+      "key": "crack",
+      "file": "crack.csv",
+      "label": "测缝计",
+      "unit": "mm",
+      "channels": ["crack_1", "crack_2", "crack_3"],
+      "role": "response"
+    },
+    {
+      "key": "tilt_x",
+      "file": "tilt_x.csv",
+      "label": "测斜探头-X方向",
+      "unit": "°",
+      "channels": ["tilt_x_1", "tilt_x_2", "tilt_x_3", "tilt_x_4"],
+      "role": "aux"
+    },
+    {
+      "key": "tilt_y",
+      "file": "tilt_y.csv",
+      "label": "测斜探头-Y方向",
+      "unit": "°",
+      "channels": ["tilt_y_1", "tilt_y_2", "tilt_y_3", "tilt_y_4"],
+      "role": "aux"
+    },
+    {
+      "key": "water_level",
+      "file": "water_level.csv",
+      "label": "水位计",
+      "unit": "mm",
+      "channels": ["water_level"],
+      "role": "env"
+    },
+    {
+      "key": "temperature",
+      "file": "temperature.csv",
+      "label": "温度",
+      "unit": "°C",
+      "channels": ["temperature"],
+      "role": "env"
+    }
+  ],
+  "model": {
+    "response_dim": 3,
+    "env_dim": 2,
+    "trans_dim": 15,
+    "num_heads": 3,
+    "ff_hidden_dim": 128,
+    "conv_hidden_dim": 96,
+    "kernel_size": 3,
+    "dropout": 0.25,
+    "m": 30,
+    "n": 6,
+    "lag": 80,
+    "train_ratio": 0.8,
+    "batch_size": 32,
+    "num_epochs": 200,
+    "patience": 20,
+    "learning_rate": 0.0003,
+    "weight_decay": 1e-5,
+    "kfold_splits": 5
+  }
+}

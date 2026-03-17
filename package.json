@@ -1,0 +1,31 @@
+{
+  "name": "predictive-shm",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Multi-Source Data Fusion and Hybrid Deep Learning for Structural Health Monitoring (Monorepo)",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:frontend": "pnpm --filter shm-monitor dev",
+    "dev:backend": "cd backend && python run.py",
+    "build": "pnpm run build:frontend",
+    "build:frontend": "pnpm --filter shm-monitor build",
+    "preview": "pnpm --filter shm-monitor preview",
+    "lint": "pnpm --filter shm-monitor lint",
+    "install:all": "pnpm install"
+  },
+  "keywords": [
+    "shm",
+    "structural-health-monitoring",
+    "vue",
+    "flask",
+    "monorepo"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=8"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
