@@ -2,9 +2,9 @@
   <div class="monitor-container">
     <!-- 工具栏 -->
     <div class="toolbar">
-      <el-button type="primary" @click="refreshData">刷新数据</el-button>
+      <el-button type="primary" @click="refreshData">Refresh data</el-button>
       <span class="refresh-info">
-        自动刷新：每 {{ refreshIntervalSec }} 秒 | 最后更新: {{ lastUpdate }}
+        Auto refresh: every {{ refreshIntervalSec }}s | Last update: {{ lastUpdate }}
       </span>
     </div>
 
@@ -26,7 +26,7 @@
       />
     </div>
 
-    <el-empty v-if="!sensorsConfig.length && !loading" description="暂无传感器配置，请检查 backend/config/monitor_config.json" />
+    <el-empty v-if="!sensorsConfig.length && !loading" description="No sensor config. Check backend/config/monitor_config.json" />
   </div>
 </template>
 
@@ -57,9 +57,9 @@ interface ThresholdPair {
 const loading = ref(true)
 const sensorsConfig = ref<SensorConfig[]>([])
 
-// 后端无配置时的默认：测缝计
+// Default when backend config is missing: crack meter
 const DEFAULT_SENSORS: SensorConfig[] = [
-  { key: 'crack', label: '测缝计', unit: 'mm', data_key: 'crack', default_static_threshold: 0.8, default_residual_threshold: 0.1, step: 0.1, precision: 2, full_width: true },
+  { key: 'crack', label: 'Crack meter', unit: 'mm', data_key: 'crack', default_static_threshold: 0.8, default_residual_threshold: 0.1, step: 0.1, precision: 2, full_width: true },
 ]
 const modelsConfig = ref<Array<{ name: string; label?: string; description?: string }>>([])
 const availableModels = ref<string[]>(['transformer_cnn'])
@@ -126,8 +126,8 @@ function createChartOption(
   precision = 3
 ) {
   return createChartOptionMulti(
-    [{ name: '实测', data: hist }],
-    [{ name: '预测', data: pred }],
+    [{ name: 'Actual', data: hist }],
+    [{ name: 'Forecast', data: pred }],
     unit,
     threshold,
     precision
@@ -156,7 +156,7 @@ function createChartOptionMulti(
       itemStyle: { color: CHART_COLORS[i % CHART_COLORS.length] },
       markLine:
         threshold != null && threshold > 0 && i === 0
-          ? { silent: true, data: [{ yAxis: threshold, name: '静态阈值', lineStyle: { type: 'dashed', color: '#F56C6C' } }] }
+          ? { silent: true, data: [{ yAxis: threshold, name: 'Static threshold', lineStyle: { type: 'dashed', color: '#F56C6C' } }] }
           : undefined,
     })
   })
@@ -292,7 +292,7 @@ function predToSeriesMulti(
   const arrs = isMulti ? (pred as number[][]) : [(pred as number[]) ?? []]
   const base = lastHistTimestampMs != null ? lastHistTimestampMs + 1 : Date.now()
   return arrs.map((arr, i) => ({
-    name: `预测-${channelNames[i] ?? i + 1}`,
+    name: `Forecast-${channelNames[i] ?? i + 1}`,
     data: (arr ?? []).map((v, j) => [base + j * stepMs, Number(v)]),
   }))
 }
@@ -342,7 +342,7 @@ async function fetchConfig() {
       }
     } catch (_) {}
   } catch (e) {
-    console.error('配置加载失败，使用默认测缝计', e)
+    console.error('Config load failed, using default crack sensor', e)
     sensorsConfig.value = DEFAULT_SENSORS
     modelsConfig.value = [{ name: 'transformer_cnn', label: 'Transformer-CNN' }]
     availableModels.value = ['transformer_cnn']
@@ -488,7 +488,7 @@ const refreshData = async () => {
     await nextTick()
     updateAllCharts()
   } catch (e) {
-    console.error('数据刷新失败', e)
+    console.error('Data refresh failed', e)
     updateAllCharts()
   }
 }
@@ -558,7 +558,7 @@ async function syncThresholdsToBackend() {
   try {
     await axios.post('/api/alerts/thresholds', thresholds.value)
   } catch (e) {
-    console.error('阈值同步失败', e)
+    console.error('Threshold sync failed', e)
   }
 }
 

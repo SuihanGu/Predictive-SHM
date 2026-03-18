@@ -1,44 +1,44 @@
 <template>
   <div class="shm-monitor-container">
     <div class="header">
-      <h2>结构健康监测数据</h2>
+      <h2>Structural Health Monitoring Data</h2>
       <div class="refresh-info">
-        <span>数据更新时间：{{ lastUpdateTime }}</span>
-        <el-button size="small" @click="refreshData">手动刷新</el-button>
+        <span>Data updated: {{ lastUpdateTime }}</span>
+        <el-button size="small" @click="refreshData">Refresh</el-button>
       </div>
     </div>
 
-    <!-- 测缝计 - 单独一行 -->
+    <!-- Crack meter - full width -->
     <div class="chart-container full-width">
-      <div class="chart-title">测缝计</div>
+      <div class="chart-title">Crack meter</div>
       <div ref="crackChartRef" class="chart"></div>
     </div>
 
     <!-- 其他传感器 - 两列布局 -->
     <div class="chart-row">
-      <!-- 测斜探头-x方向 -->
+      <!-- Tilt X -->
       <div class="chart-container half-width">
-        <div class="chart-title">测斜探头-X方向</div>
+        <div class="chart-title">Tilt probe (X)</div>
         <div ref="tiltXChartRef" class="chart"></div>
       </div>
 
-      <!-- 测斜探头-y方向 -->
+      <!-- Tilt Y -->
       <div class="chart-container half-width">
-        <div class="chart-title">测斜探头-Y方向</div>
+        <div class="chart-title">Tilt probe (Y)</div>
         <div ref="tiltYChartRef" class="chart"></div>
       </div>
     </div>
 
     <div class="chart-row">
-      <!-- 水准仪 -->
+      <!-- Settlement -->
       <div class="chart-container half-width">
-        <div class="chart-title">水准仪</div>
+        <div class="chart-title">Settlement</div>
         <div ref="levelChartRef" class="chart"></div>
       </div>
 
-      <!-- 水位计 -->
+      <!-- Water level -->
       <div class="chart-container half-width">
-        <div class="chart-title">水位计</div>
+        <div class="chart-title">Water level</div>
         <div ref="waterLevelChartRef" class="chart"></div>
       </div>
     </div>
@@ -211,7 +211,7 @@ function createChartOption(
   const series = seriesData.map((item, idx) => ({
     name: item.name,
     type: "line",
-    stack: "总量",
+    stack: "Total",
     showSymbol: false,
     data: item.data,
     areaStyle: {
@@ -522,42 +522,42 @@ async function updateCharts() {
     // 更新测缝计图表
     if (crackChart && crackChartRef.value) {
       const crackSeries = processCrackData(crackData);
-      const crackOption = createChartOption("测缝计", crackSeries, "");
+      const crackOption = createChartOption("Crack meter", crackSeries, "");
       crackChart.setOption(crackOption as any, { notMerge: true });
     }
 
     // 更新测斜探头-X图表
     if (tiltXChart && tiltXChartRef.value) {
       const tiltXSeries = processTiltData(tiltData, "x");
-      const tiltXOption = createChartOption("测斜探头-X方向", tiltXSeries, "");
+      const tiltXOption = createChartOption("Tilt probe (X)", tiltXSeries, "");
       tiltXChart.setOption(tiltXOption as any, { notMerge: true });
     }
 
     // 更新测斜探头-Y图表
     if (tiltYChart && tiltYChartRef.value) {
       const tiltYSeries = processTiltData(tiltData, "y");
-      const tiltYOption = createChartOption("测斜探头-Y方向", tiltYSeries, "");
+      const tiltYOption = createChartOption("Tilt probe (Y)", tiltYSeries, "");
       tiltYChart.setOption(tiltYOption as any, { notMerge: true });
     }
 
     // 更新水准仪图表
     if (levelChart && levelChartRef.value) {
       const levelSeries = processLevelData(levelData);
-      const levelOption = createChartOption("水准仪", levelSeries, "");
+      const levelOption = createChartOption("Settlement", levelSeries, "");
       levelChart.setOption(levelOption as any, { notMerge: true });
     }
 
     // 更新水位计图表
     if (waterLevelChart && waterLevelChartRef.value) {
       const waterLevelSeries = processWaterLevelData(waterLevelData);
-      const waterLevelOption = createChartOption("水位计", waterLevelSeries, "mm");
+      const waterLevelOption = createChartOption("Water level", waterLevelSeries, "mm");
       waterLevelChart.setOption(waterLevelOption as any, { notMerge: true });
     }
 
     // 更新最后更新时间
     lastUpdateTime.value = new Date().toLocaleString("zh-CN");
   } catch (error) {
-    console.error("获取数据失败:", error);
+    console.error("Failed to fetch data:", error);
   }
 }
 

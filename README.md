@@ -1,6 +1,6 @@
 ## 🏯 **Multi-Source Data Fusion and Hybrid Deep Learning for Structural Health Monitoring: Application to Yuhuangge Pavilion**
 
-*A real-time visualization platform for multi-sensor structural health monitoring, built with Vue3 + TypeScript + Vite + ECharts.*
+*A real-time visualization platform for multi-sensor Structural Health Monitoring (SHM), built with Vue 3 + TypeScript + Vite + ECharts, with a Python backend for data access and prediction.*
 
 ---
 
@@ -26,64 +26,71 @@ The **SHM-System** is a web-based platform for structural health monitoring deve
 
 ## 🚀 Quick Start
 
-**从仓库根目录（Monorepo 推荐）：**
+### Run from the repository root (recommended, monorepo)
 
 ```bash
-pnpm install          # 安装前端依赖（workspace）
-pnpm dev              # 同时启动前端 + 后端（推荐）
-pnpm dev:frontend     # 仅启动前端 → http://localhost:3000
-pnpm dev:backend      # 仅启动后端 → http://localhost:4999
-pnpm build            # 构建前端
+pnpm install          # install workspace dependencies
+pnpm dev              # start frontend + backend (recommended)
+pnpm dev:frontend     # start frontend only  -> http://localhost:3000
+pnpm dev:backend      # start backend only   -> http://localhost:4999
+pnpm build            # build frontend
 ```
 
-> ⚠️ **避免 ECONNREFUSED**：前端需代理 `/api` 到后端 4999 端口，请用 `pnpm dev` 同时启动前后端，或先单独运行 `pnpm dev:backend`。
+> If the frontend shows **ECONNREFUSED**, make sure the backend is running on port **4999** and that the frontend proxy routes `/api` to the backend. Using `pnpm dev` is the easiest way to start both.
 
-**或分别进入子目录：**
+### Run from subdirectories
 
-- **前端：** `cd frontend && pnpm install && pnpm dev` → http://localhost:3000  
-- **后端：** `cd backend && pip install -r requirements.txt && python run.py` → http://localhost:4999  
+- **Frontend**: `cd frontend && pnpm install && pnpm dev` → `http://localhost:3000`  
+- **Backend**: `cd backend && pip install -r requirements.txt && python run.py` → `http://localhost:4999`  
 
-**Docker：** `docker-compose up -d`
+### Docker (recommended for a quick demo)
+
+```bash
+docker-compose up -d
+```
+
+- **Frontend**: `http://localhost:3000` (served by the container on port 80, mapped to 3000)
+- **Backend**: `http://localhost:4999`
 
 ### Requirements
 
-* Node.js ≥ 18, pnpm ≥ 8（前端）
-* Python ≥ 3.10（后端）
+* Node.js ≥ 18, pnpm ≥ 8 (frontend)
+* Python ≥ 3.10 (backend)
+* Docker (optional)
 
 ---
 
 ## 📂 Project Structure (Monorepo)
 
-本仓库采用 **Monorepo** 架构，根目录通过 `pnpm-workspace.yaml` 管理前端工作区，后端为独立 Python 应用。
+This repository uses a **monorepo** layout. The root manages the frontend workspace via `pnpm-workspace.yaml`, while the backend is an independent Python service.
 
 ```
 predictive-shm/
-├── package.json              # 根脚本：pnpm dev / pnpm dev:frontend / pnpm dev:backend
-├── pnpm-workspace.yaml       # 工作区：frontend
-├── frontend/                  # 工作区包：Vue3 + Vite
-│   ├── src/views/Monitor.vue, main.ts, App.vue, ...
-│   ├── index.html, package.json, vite.config.ts, route.ts
+├── package.json               # root scripts: pnpm dev / pnpm dev:frontend / pnpm dev:backend
+├── pnpm-workspace.yaml        # workspace: frontend
+├── frontend/                  # Vue 3 + Vite app
+│   ├── src/ (views/Monitor.vue, App.vue, ...)
+│   ├── package.json, vite.config.ts
 │   └── Dockerfile
-├── backend/                     # Flask（论文 §2.1）
-│   ├── app/ (core, adapters, services, routers), main.py
-│   ├── models/, scripts/, sample_data/
-│   ├── prediction_service.py, requirements.txt, run.py
+├── backend/                   # Python API service
+│   ├── app/ (adapters, services, routers, ...), main.py
+│   ├── config/, models/, scripts/, sample_data/
+│   ├── requirements.txt, run.py
 │   └── Dockerfile
-├── docs/, data_2025_08_to_now/, image/
 ├── docker-compose.yml, README.md, LICENSE
 ```
 
 ---
 
-## 📡 传感器接入
+## 📡 Sensor Integration
 
-**真实传感器接入**：详见 [docs/REAL_SENSOR_INTEGRATION.md](docs/REAL_SENSOR_INTEGRATION.md)
+For real sensor onboarding, see `docs/REAL_SENSOR_INTEGRATION.md`.
 
-支持方式：HTTP API 上报、CSV 文件、桥接脚本（数据库/Modbus/MQTT）。
+Supported ingestion options typically include: HTTP API uploads, CSV files, and bridge scripts (e.g., database/Modbus/MQTT).
 
 ---
 
-## Supported Sensors（示例）
+## Supported Sensors (examples)
 
 ### 1. Crack Meters
 
@@ -92,8 +99,8 @@ predictive-shm/
 
 ### 2. Tilt Sensors
 
-**X-direction:** 00476464, 00476465, 00476466, 00476467
-**Y-direction:** same devices
+- **X-direction**: 00476464, 00476465, 00476466, 00476467  
+- **Y-direction**: same devices
 
 * Data Fields: `data1` (X), `data2` (Y)
 
@@ -115,29 +122,6 @@ predictive-shm/
 
 ---
 
-## 📊 Visualization Examples
-
-
-### System Architecture Diagram
-
-![System Architecture](./docs/system-architecture.png)
-
-> Diagram illustrating data acquisition, processing, model inference, and visualization layers
-
-### Case Study Dashboard (e.g., Yu Huang Ge Temple)
-
-![Case Study Dashboard](./docs/example-dashboard.png)
-
-> Real deployment example with multi-sensor data visualization and predictive results
-
-### Multi-Sensor Line Chart
-
-![Multi-Sensor Line Chart](./docs/example-linechart.png)
-
-> Example of multi-device trend visualization
-
----
-
 ## ⚙️ Development
 
 ### Refresh Interval
@@ -149,7 +133,7 @@ const REFRESH_INTERVAL = 10 * 60 * 1000; // 10 min
 ### Time Range
 
 ```ts
-const dayAgo = now - 24 * 60 * 60; // 24 hours
+const dayAgo = now - 24 * 60 * 60 * 1000; // 24 hours
 ```
 
 ### API Proxy for CORS
@@ -158,13 +142,18 @@ const dayAgo = now - 24 * 60 * 60; // 24 hours
 server: {
   proxy: {
     '/api': {
-      target: 'my api',
+      target: 'http://localhost:4999',
       changeOrigin: true,
       rewrite: path => path.replace(/^\/api/, '')
     }
   }
 }
 ```
+
+### Environment Variables (Docker)
+
+- `SHM_API_BASE_URL`: backend upstream base URL (default in `docker-compose.yml` points to `http://139.159.136.213:4999/iem/shm`)
+- `VITE_API_BASE`: frontend API base for the backend (default `http://localhost:4999`)
 
 ---
 

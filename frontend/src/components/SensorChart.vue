@@ -4,7 +4,7 @@
       <span class="chart-title">{{ sensor.label }} ({{ sensor.unit }})</span>
       <div class="chart-controls">
         <template v-if="showModelSelect">
-          <span class="control-label">模型</span>
+          <span class="control-label">Model</span>
           <el-select
             :model-value="model"
             size="small"
@@ -19,25 +19,25 @@
             />
           </el-select>
         </template>
-        <span class="control-label">静态阈值</span>
+        <span class="control-label">Static threshold</span>
         <el-input-number
           :model-value="threshold.static"
           :min="0"
           :step="step"
           :precision="precision"
           size="small"
-          placeholder="0=不启用"
+          placeholder="0=disabled"
           class="control-input"
           @update:model-value="onThresholdChange('static', $event)"
         />
-        <span class="control-label">预测残差</span>
+        <span class="control-label">Prediction residual</span>
         <el-input-number
           :model-value="threshold.residual"
           :min="0"
           :step="step"
           :precision="precision"
           size="small"
-          placeholder="0=不启用"
+          placeholder="0=disabled"
           class="control-input"
           @update:model-value="onThresholdChange('residual', $event)"
         />
