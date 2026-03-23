@@ -1,6 +1,5 @@
 # Predictive-SHM Backend — 以 TensorFlow 2.8 (tf28) 为主，torch 可选
-# 已按 conda 环境 tf28（Python 3.9、TF 2.8.4）对齐版本范围
-# 完全使用 FastAPI，无 Flask 依赖
+
 
 # FastAPI 服务
 fastapi>=0.100.0,<0.116.0
