@@ -19,7 +19,7 @@
         :available-models="availableModels"
         :get-model-label="getModelLabel"
         :threshold="thresholds[sensor.key] || { static: 0, residual: 0 }"
-        :show-model-select="!!sensor.full_width"
+        :show-model-select="sensorShowsForecast(sensor)"
         :has-alert="sensorsInAlert.has(sensor.key)"
         @update:model="(v) => { modelBySensor[sensor.key] = v; onModelChange(sensor.key) }"
         @update:threshold="onThresholdChange"
@@ -34,6 +34,7 @@
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import axios from 'axios'
 import SensorChart from '@/components/SensorChart.vue'
+import { APP_FONT_BUMP_PX } from '@/constants/ui'
 
 interface SensorConfig {
   key: string
@@ -47,6 +48,21 @@ interface SensorConfig {
   step?: number
   precision?: number
   full_width?: boolean
+  /** 为 true 时请求预测 API、展示 Forecast 曲线与模型下拉；见 monitor_config.json */
+  show_forecast?: boolean
+}
+
+/** 是否展示/请求预测：显式 true 开启、false 关闭；未配置时仅测缝计默认 true（兼容无 show_forecast 的旧配置） */
+function sensorShowsForecast(s: SensorConfig): boolean {
+  const v = s.show_forecast as unknown
+  if (v === true) return true
+  if (v === false) return false
+  if (typeof v === 'string') {
+    const t = v.toLowerCase().trim()
+    if (t === 'true' || t === '1') return true
+    if (t === 'false' || t === '0') return false
+  }
+  return s.key === 'crack'
 }
 
 interface ThresholdPair {
@@ -59,7 +75,18 @@ const sensorsConfig = ref<SensorConfig[]>([])
 
 // Default when backend config is missing: crack meter
 const DEFAULT_SENSORS: SensorConfig[] = [
-  { key: 'crack', label: 'Crack meter', unit: 'mm', data_key: 'crack', default_static_threshold: 0.8, default_residual_threshold: 0.1, step: 0.1, precision: 2, full_width: true },
+  {
+    key: 'crack',
+    label: 'Crack meter',
+    unit: 'mm',
+    data_key: 'crack',
+    default_static_threshold: 0.8,
+    default_residual_threshold: 0.1,
+    step: 0.1,
+    precision: 2,
+    full_width: true,
+    show_forecast: true,
+  },
 ]
 const modelsConfig = ref<Array<{ name: string; label?: string; description?: string }>>([])
 const availableModels = ref<string[]>(['transformer_cnn'])
@@ -117,6 +144,9 @@ function mockPredictionMulti(lastVals: number[]): number[][] {
 
 const CHART_COLORS = ['#5470C6', '#91CC75', '#FAC858', '#EE6666', '#73C0DE', '#3BA272', '#FC8452', '#9A60B4']
 
+/** 图例、坐标轴标注、阈值线注释、提示框等与图表右上控件统一字号 */
+const CHART_TEXT_PX = 12 + APP_FONT_BUMP_PX
+
 function createChartOption(
   _title: string,
   hist: Array<[number, number]>,
@@ -125,9 +155,10 @@ function createChartOption(
   threshold?: number,
   precision = 3
 ) {
+  const predLeg = pred.length ? [{ name: 'Forecast', data: pred }] : []
   return createChartOptionMulti(
     [{ name: 'Actual', data: hist }],
-    [{ name: 'Forecast', data: pred }],
+    predLeg,
     unit,
     threshold,
     precision
@@ -156,21 +187,34 @@ function createChartOptionMulti(
       itemStyle: { color: CHART_COLORS[i % CHART_COLORS.length] },
       markLine:
         threshold != null && threshold > 0 && i === 0
-          ? { silent: true, data: [{ yAxis: threshold, name: 'Static threshold', lineStyle: { type: 'dashed', color: '#F56C6C' } }] }
+          ? {
+              silent: true,
+              label: { fontSize: CHART_TEXT_PX, color: '#606266' },
+              data: [
+                {
+                  yAxis: threshold,
+                  name: 'Static threshold',
+                  lineStyle: { type: 'dashed', color: '#F56C6C' },
+                  label: { fontSize: CHART_TEXT_PX, color: '#606266' },
+                },
+              ],
+            }
           : undefined,
     })
   })
-  predSeries.forEach((s, i) => {
-    series.push({
-      name: s.name,
-      type: 'line' as const,
-      data: s.data,
-      smooth: true,
-      showSymbol: false,
-      lineStyle: { type: 'dashed', width: 2, color: CHART_COLORS[(histSeries.length + i) % CHART_COLORS.length] },
-      itemStyle: { color: CHART_COLORS[(histSeries.length + i) % CHART_COLORS.length] },
+  predSeries
+    .filter((s) => Array.isArray(s.data) && s.data.length > 0)
+    .forEach((s, i) => {
+      series.push({
+        name: s.name,
+        type: 'line' as const,
+        data: s.data,
+        smooth: true,
+        showSymbol: false,
+        lineStyle: { type: 'dashed', width: 2, color: CHART_COLORS[(histSeries.length + i) % CHART_COLORS.length] },
+        itemStyle: { color: CHART_COLORS[(histSeries.length + i) % CHART_COLORS.length] },
+      })
     })
-  })
   const allX = series.reduce<number[]>((acc, s) => acc.concat(s.data.map((d: [number, number]) => d[0])), []).filter(Boolean)
   const minT = allX.length ? Math.min(...allX) : undefined
   const maxT = allX.length ? Math.max(...allX) : undefined
@@ -202,16 +246,28 @@ function createChartOptionMulti(
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'line' },
+      textStyle: { fontSize: CHART_TEXT_PX },
       valueFormatter: (value: number) => formatValue(value),
     },
-    legend: { data: series.map((s) => s.name), bottom: 8 },
-    grid: { top: 40, right: 30, bottom: 80, left: 60, containLabel: true },
+    // 图例置顶，与时间轴、缩放条分离，避免底部挤在一起重合
+    legend: {
+      data: series.map((s) => s.name),
+      top: 6,
+      left: 'center',
+      textStyle: { fontSize: CHART_TEXT_PX, color: '#606266' },
+      itemGap: 16,
+      padding: [4, 8, 0, 8],
+    },
+    grid: { top: 52, right: 30, bottom: 88, left: 60, containLabel: true },
     xAxis: {
       type: 'time',
       boundaryGap: false,
       min: minT,
       max: maxT,
       axisLabel: {
+        fontSize: CHART_TEXT_PX,
+        color: '#606266',
+        margin: 10,
         formatter: (v: number) => {
           const d = new Date(v)
           const pad = (n: number) => String(n).padStart(2, '0')
@@ -222,15 +278,26 @@ function createChartOptionMulti(
     yAxis: {
       type: 'value',
       name: unit,
-      nameTextStyle: { fontSize: 11 },
+      nameTextStyle: { fontSize: CHART_TEXT_PX, color: '#606266' },
       min: yMin,
       max: yMax,
       splitNumber: 6,
-      axisLabel: { formatter: (v: number) => formatValue(v) },
+      axisLabel: {
+        fontSize: CHART_TEXT_PX,
+        color: '#606266',
+        formatter: (v: number) => formatValue(v),
+      },
     },
     dataZoom: [
       { type: 'inside', start: 70, end: 100 },
-      { type: 'slider', start: 70, end: 100, height: 20, bottom: 10 },
+      {
+        type: 'slider',
+        start: 70,
+        end: 100,
+        height: 22,
+        bottom: 8,
+        textStyle: { fontSize: CHART_TEXT_PX, color: '#606266' },
+      },
     ],
     series,
   }
@@ -288,8 +355,11 @@ function predToSeriesMulti(
   stepMs = 60000,
   lastHistTimestampMs?: number
 ): Array<{ name: string; data: Array<[number, number]> }> {
+  if (pred == null || (Array.isArray(pred) && pred.length === 0)) return []
   const isMulti = Array.isArray(pred) && pred.length > 0 && Array.isArray((pred as number[][])[0])
   const arrs = isMulti ? (pred as number[][]) : [(pred as number[]) ?? []]
+  if (isMulti && !(arrs as number[][]).some((a) => Array.isArray(a) && a.length > 0)) return []
+  if (!isMulti && (!arrs[0] || arrs[0].length === 0)) return []
   const base = lastHistTimestampMs != null ? lastHistTimestampMs + 1 : Date.now()
   return arrs.map((arr, i) => ({
     name: `Forecast-${channelNames[i] ?? i + 1}`,
@@ -410,8 +480,8 @@ const refreshData = async () => {
     const crackSensor = sensorsConfig.value.find((s) => s.key === 'crack')
     const crackChannels = crackSensor?.channels ?? ['crack_1']
 
-    // 仅当该传感器有预测模型下拉框（full_width）且已选模型时，才调用预测 API 并展示预测曲线
-    if (crackSensor?.full_width && modelBySensor.value.crack) {
+    // 仅当该传感器开启预测且已选模型时，才对测缝计调用预测 API（见 monitor_config.json / sensorShowsForecast）
+    if (crackSensor && sensorShowsForecast(crackSensor) && modelBySensor.value.crack) {
       try {
         await axios.post(`/api/models/switch?model_name=${encodeURIComponent(modelBySensor.value.crack)}`)
         const predictRes = await axios.post('/api/predict', {
@@ -441,8 +511,8 @@ const refreshData = async () => {
 
     for (const s of sensorsConfig.value) {
       if (pred[s.key]) continue
-      // 无预测模型下拉框的传感器不展示预测曲线
-      if (!s.full_width) {
+      // 未开启预测的传感器不请求、不展示预测曲线
+      if (!sensorShowsForecast(s)) {
         pred[s.key] = s.channels?.length ? s.channels.map(() => []) : []
         continue
       }
@@ -505,20 +575,21 @@ function updateAllCharts() {
     const channels = s.channels
     const staticTh = thresholds.value[s.key]?.static ?? 0
     const thresholdOpt = staticTh > 0 ? staticTh : undefined
+    const showFc = sensorShowsForecast(s)
 
     if (channels?.length) {
       const histSeries = toSeriesMulti(hist, channels)
       const lastTs = histSeries[0]?.data?.length ? histSeries[0].data[histSeries[0].data.length - 1][0] : undefined
-      const predRaw = pred[s.key] ?? []
-      const predSeries = predToSeriesMulti(predRaw, channels, stepMs, lastTs)
+      const predRaw = showFc ? (pred[s.key] ?? []) : []
+      const predSeries = showFc ? predToSeriesMulti(predRaw, channels, stepMs, lastTs) : []
       const precision = s.precision ?? 3
       opts[s.key] = createChartOptionMulti(histSeries, predSeries, s.unit, thresholdOpt, precision)
     } else {
       const histSeries = toSeries(hist, s.key)
       const lastTs = histSeries.length ? histSeries[histSeries.length - 1][0] : undefined
-      const predSeries = predToSeries(pred[s.key] || [], stepMs, lastTs)
+      const predPts = showFc ? predToSeries(pred[s.key] || [], stepMs, lastTs) : []
       const precision = s.precision ?? 3
-      opts[s.key] = createChartOption('', histSeries, predSeries, s.unit, thresholdOpt, precision)
+      opts[s.key] = createChartOption('', histSeries, predPts, s.unit, thresholdOpt, precision)
     }
   }
   chartOptions.value = opts
@@ -591,7 +662,7 @@ onUnmounted(() => {
 .refresh-info {
   margin-left: auto;
   color: #606266;
-  font-size: 13px;
+  font-size: calc(13px + var(--app-font-bump));
 }
 .chart-row {
   display: flex;

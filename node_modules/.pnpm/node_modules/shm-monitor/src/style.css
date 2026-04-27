@@ -1,6 +1,19 @@
+:root {
+  --app-font-bump: 5px;
+  /* Element Plus 默认字号各 +5px */
+  --el-font-size-extra-large: calc(20px + var(--app-font-bump));
+  --el-font-size-large: calc(18px + var(--app-font-bump));
+  --el-font-size-medium: calc(16px + var(--app-font-bump));
+  --el-font-size-base: calc(14px + var(--app-font-bump));
+  --el-font-size-small: calc(13px + var(--app-font-bump));
+  --el-font-size-extra-small: calc(12px + var(--app-font-bump));
+  --el-font-line-height-primary: calc(24px + var(--app-font-bump));
+}
+
 body {
   margin: 0;
   padding: 0;
+  font-size: calc(16px + var(--app-font-bump));
 }
 
 #app {

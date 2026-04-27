@@ -26,11 +26,11 @@ _models_cache: Optional[List[Dict[str, Any]]] = None
 
 
 _DEFAULT_SENSORS = [
-    {"key": "crack", "label": "Crack meter", "unit": "mm", "data_key": "crack", "default_static_threshold": 0.8, "default_residual_threshold": 0.1, "step": 0.1, "precision": 2, "full_width": True},
-    {"key": "tilt_x", "label": "Tilt probe (X)", "unit": "°", "data_key": "tilt_x", "default_static_threshold": 0.5, "default_residual_threshold": 0.05, "step": 0.1, "precision": 2, "full_width": False},
-    {"key": "tilt_y", "label": "Tilt probe (Y)", "unit": "°", "data_key": "tilt_y", "default_static_threshold": 0.5, "default_residual_threshold": 0.05, "step": 0.1, "precision": 2, "full_width": False},
-    {"key": "settlement", "label": "Settlement", "unit": "mm", "data_key": "settlement", "default_static_threshold": 5.0, "default_residual_threshold": 0.5, "step": 0.5, "precision": 2, "full_width": False},
-    {"key": "water_level", "label": "Water level", "unit": "mm", "data_key": "water_level", "default_static_threshold": 100, "default_residual_threshold": 10, "step": 1, "precision": 1, "full_width": False},
+    {"key": "crack", "label": "Crack meter", "unit": "mm", "data_key": "crack", "default_static_threshold": 0.8, "default_residual_threshold": 0.1, "step": 0.1, "precision": 2, "full_width": True, "show_forecast": True},
+    {"key": "tilt_x", "label": "Tilt probe (X)", "unit": "°", "data_key": "tilt_x", "default_static_threshold": 0.5, "default_residual_threshold": 0.05, "step": 0.1, "precision": 2, "full_width": False, "show_forecast": False},
+    {"key": "tilt_y", "label": "Tilt probe (Y)", "unit": "°", "data_key": "tilt_y", "default_static_threshold": 0.5, "default_residual_threshold": 0.05, "step": 0.1, "precision": 2, "full_width": False, "show_forecast": False},
+    {"key": "settlement", "label": "Settlement", "unit": "mm", "data_key": "settlement", "default_static_threshold": 5.0, "default_residual_threshold": 0.5, "step": 0.5, "precision": 2, "full_width": False, "show_forecast": False},
+    {"key": "water_level", "label": "Water level", "unit": "mm", "data_key": "water_level", "default_static_threshold": 100, "default_residual_threshold": 10, "step": 1, "precision": 1, "full_width": False, "show_forecast": False},
 ]
 _DEFAULT_MODELS = [{"name": "transformer_cnn", "label": "Transformer-CNN", "description": "Crack forecasting (PyTorch)"}]
 

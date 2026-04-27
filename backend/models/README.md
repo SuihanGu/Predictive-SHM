@@ -36,7 +36,7 @@
 | 文件 | 说明 | 示例列 |
 |------|------|--------|
 | `settlement.csv` | 水准仪 | time, settlement_1, settlement_2, settlement_3, settlement_4 |
-| `track.csv` | 测缝计 | time, crack_1, crack_2, crack_3 |
+| `crack.csv` | 测缝计 | time, crack_1, crack_2, crack_3 |
 | `tilt_x.csv` | 测斜-X | time, tilt_x_1, tilt_x_2, tilt_x_3, tilt_x_4 |
 | `water_level.csv` | 水位计 | time, water_level |
 | `training_data.csv` | 已合并的完整训练数据（优先使用） | time + 所有传感器列 |
@@ -52,7 +52,7 @@
 ```json
 {
   "sensor_types": [
-    { "key": "crack", "file": "track.csv", "label": "测缝计", "role": "response", "channels": ["crack_1","crack_2","crack_3"] },
+    { "key": "crack", "file": "crack.csv", "label": "测缝计", "role": "response", "channels": ["crack_1","crack_2","crack_3"] },
     { "key": "water_level", "file": "water_level.csv", "label": "水位计", "role": "env", "channels": ["water_level"] }
   ],
   "model": { "m": 30, "n": 6, "lag": 80, "response_dim": 3 }

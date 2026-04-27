@@ -47,7 +47,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
+import { APP_FONT_BUMP_PX } from '@/constants/ui'
 import * as echarts from "echarts/core";
+
+const ECHART_FS_TITLE = 14 + APP_FONT_BUMP_PX
+const ECHART_FS_BODY = 12 + APP_FONT_BUMP_PX
 import { LineChart } from "echarts/charts";
 import {
   GridComponent,
@@ -245,7 +249,7 @@ function createChartOption(
       top: 0,
       textStyle: {
         color: "#303133",
-        fontSize: 14,
+        fontSize: ECHART_FS_TITLE,
         fontWeight: 600
       }
     },
@@ -260,7 +264,7 @@ function createChartOption(
       borderWidth: 2,
       textStyle: {
         color: "#1f2937",
-        fontSize: 12
+        fontSize: ECHART_FS_BODY
       },
       axisPointer: {
         type: "line",
@@ -305,7 +309,7 @@ function createChartOption(
       itemHeight: 14,
       itemGap: 20,
       textStyle: {
-        fontSize: 12,
+        fontSize: ECHART_FS_BODY,
         padding: [0, 5, 0, 5]
       },
       backgroundColor: "rgba(255, 255, 255, 0.7)",
@@ -328,7 +332,7 @@ function createChartOption(
       maxInterval: 24 * 60 * 60 * 1000,
       axisLabel: {
         color: "#606266",
-        fontSize: 12,
+        fontSize: ECHART_FS_BODY,
         rotate: -45,
         margin: 12,
         formatter: (value: number) => {
@@ -363,11 +367,11 @@ function createChartOption(
       name: unit,
       nameLocation: "end",
       nameTextStyle: {
-        fontSize: 12,
+        fontSize: ECHART_FS_BODY,
         padding: [0, 0, 0, 10]
       },
       axisLabel: {
-        fontSize: 12
+        fontSize: ECHART_FS_BODY
       },
       axisLine: {
         lineStyle: {
@@ -648,7 +652,7 @@ onUnmounted(() => {
 
 .header h2 {
   margin: 0;
-  font-size: 20px;
+  font-size: calc(20px + var(--app-font-bump));
   color: #303133;
 }
 
@@ -660,7 +664,7 @@ onUnmounted(() => {
 
 .refresh-info span {
   color: #606266;
-  font-size: 14px;
+  font-size: calc(14px + var(--app-font-bump));
 }
 
 .chart-container {
@@ -686,7 +690,7 @@ onUnmounted(() => {
 }
 
 .chart-title {
-  font-size: 16px;
+  font-size: calc(16px + var(--app-font-bump));
   font-weight: 600;
   color: #303133;
   margin-bottom: 15px;

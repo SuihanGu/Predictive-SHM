@@ -10,7 +10,7 @@ router = APIRouter()
 @router.get("/config/monitor")
 async def get_monitor_config():
     """
-    返回监控页配置：传感器列表（表头、单位、阈值等）、模型列表。
-    前端根据此配置动态渲染图表，用户可修改 backend/config/monitor_config.json 扩展传感器与模型。
+    返回监控页配置：传感器列表（表头、单位、阈值、full_width、show_forecast 等）、模型列表。
+    仅 show_forecast 为 true 的传感器会展示预测曲线与模型下拉；见 monitor_config.json。
     """
     return get_full_config()

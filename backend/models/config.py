@@ -104,7 +104,7 @@ class ModelConfig:
         return cls(
             sensor_types=[
                 SensorTypeConfig("settlement", "settlement.csv", "水准仪", "mm", ["settlement_1","settlement_2","settlement_3","settlement_4"], "aux"),
-                SensorTypeConfig("crack", "track.csv", "测缝计", "mm", ["crack_1","crack_2","crack_3"], "response"),
+                SensorTypeConfig("crack", "crack.csv", "测缝计", "mm", ["crack_1","crack_2","crack_3"], "response"),
                 SensorTypeConfig("tilt_x", "tilt_x.csv", "测斜-X", "°", ["tilt_x_1","tilt_x_2","tilt_x_3","tilt_x_4"], "aux"),
                 SensorTypeConfig("tilt_y", "tilt_y.csv", "测斜-Y", "°", ["tilt_y_1","tilt_y_2","tilt_y_3","tilt_y_4"], "aux"),
                 SensorTypeConfig("water_level", "water_level.csv", "水位计", "mm", ["water_level"], "env"),

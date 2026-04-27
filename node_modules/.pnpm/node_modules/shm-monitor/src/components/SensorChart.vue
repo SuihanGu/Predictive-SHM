@@ -77,6 +77,8 @@ interface SensorConfig {
   step?: number
   precision?: number
   full_width?: boolean
+  /** 与 monitor_config.json 一致：仅 true 时显示模型选择与预测曲线 */
+  show_forecast?: boolean
 }
 
 interface ThresholdPair {
@@ -187,9 +189,11 @@ defineExpose({ resize })
   margin-bottom: 15px;
   padding-bottom: 10px;
   border-bottom: 2px solid #409eff;
+  /* 与图表内图例、坐标轴与注释统一，并随全局 --app-font-bump 放大 */
+  font-size: calc(12px + var(--app-font-bump));
 }
 .chart-title {
-  font-size: 16px;
+  font-size: calc(12px + var(--app-font-bump));
   font-weight: 600;
   color: #303133;
 }
@@ -198,14 +202,27 @@ defineExpose({ resize })
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  font-size: calc(12px + var(--app-font-bump));
 }
 .chart-controls .control-label {
-  font-size: 12px;
+  font-size: calc(12px + var(--app-font-bump));
   color: #909399;
   margin-right: 2px;
 }
 .chart-controls .control-input {
   width: 100px;
+}
+/* Element Plus small 控件与图例字号对齐 */
+.chart-controls :deep(.el-select__wrapper),
+.chart-controls :deep(.el-input-number .el-input__wrapper) {
+  font-size: calc(12px + var(--app-font-bump));
+}
+.chart-controls :deep(.el-select__placeholder),
+.chart-controls :deep(.el-select__selected-item) {
+  font-size: calc(12px + var(--app-font-bump));
+}
+.chart-controls :deep(.el-input-number .el-input__inner) {
+  font-size: calc(12px + var(--app-font-bump));
 }
 .chart {
   width: 100%;

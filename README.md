@@ -90,6 +90,16 @@ Supported ingestion options typically include: HTTP API uploads, CSV files, and 
 
 ---
 
+## Reproducibility, pre-trained weights, and sample data
+
+**Pre-trained model (crack / Transformer-CNN).** The registry entry `transformer_cnn` in [`backend/models/model_registry.json`](backend/models/model_registry.json) points to **`backend/models/best_crack_model.pth`** plus **`scaler_all.pkl`** and **`scaler_response.pkl`** (see [`backend/models/README.md`](backend/models/README.md)). **When these files are present**, `POST /predict` uses the real **`TransformerCNNAdapter`**; if they are absent (e.g. a minimal clone), the backend **falls back to `MockAdapter`** for smoke tests. Teams publishing this repo typically **ship the three artifacts in-tree**, or provide them via **Git LFS** / a **tagged Release** with download steps linked here.
+
+**Sample sensor data.** **Reference CSVs** for a multi-sensor layout are under [`backend/sample_data/`](backend/sample_data/) (e.g. `crack.csv`, `tilt_x.csv`, `settlement.csv`, `water_level.csv`, merged `training_data.csv`). They support **pipeline testing, UI demo, and re-training workflows**. **Owing to data-use agreements** on the Yuhuangge deployment, we **are not able to publish** the complete raw monitoring archives; we provide **partial / de-sensitized** excerpts so reviewers and readers can still **exercise ingestion, fusion, and prediction APIs** end-to-end together with the published weights.
+
+**“One-click” demo.** From the repo root, `pnpm dev` or `docker-compose up -d` starts the stack; use the monitor UI or the prediction API with `history_data` shaped like the sample CSVs. The public bundle is intended to **reproduce the software behavior**; **point-by-point numerical identity** with every figure computed on restricted onsite data **may not be expected** from the shared sample alone.
+
+---
+
 ## Supported Sensors (examples)
 
 ### 1. Crack Meters
@@ -154,6 +164,56 @@ server: {
 
 - `SHM_API_BASE_URL`: backend upstream base URL (default in `docker-compose.yml` points to `http://139.159.136.213:4999/iem/shm`)
 - `VITE_API_BASE`: frontend API base for the backend (default `http://localhost:4999`)
+
+---
+
+## Extending the Prediction Module
+
+In the paper, **Listing 1** shows the **model registration schema** implemented as [`backend/models/model_registry.json`](backend/models/model_registry.json): a **`models`** array of entries, each binding **`id`**, **`adapter`**, weight **`path`**s, I/O hints, and optional **`meta_file`**. That file is the single source of truth the backend loads for **dynamic adapter selection**.
+
+At request time, **`POST /predict`** in [`backend/app/routers/predict.py`](backend/app/routers/predict.py) runs the inference pipeline: historical rows → **ULDM** → **`ModelAdapter.from_uldm` → `predict` → `to_standard_output`** → **`StandardPrediction`** JSON (this execution path is separate from the registry format in **Listing 1**).
+
+### Adapter interface
+
+- Implement a subclass of **`ModelAdapter`** ([`backend/app/adapters/base.py`](backend/app/adapters/base.py)): at minimum **`predict`**, and for this stack typically **`from_uldm`** (ULDM → model tensor) and optionally **`to_standard_output`** (raw array → time-stamped readings).
+- Reference implementations live under **[`backend/app/adapters/`](backend/app/adapters/)** (e.g. Transformer-CNN and ONNX wrappers).
+
+### Registration (JSON) and metadata (JSON / YAML)
+
+1. **Runtime registry** — add a model object to [`backend/models/model_registry.json`](backend/models/model_registry.json): **`id`** (API / UI `model_name`), **`adapter`** (factory key, e.g. `TransformerCNNAdapter`, `ONNXAdapter`), artifact **`path`**s, and optional **`meta_file`**. At load time, the registry merges **`meta_file`** when it is **JSON** (see [`backend/app/adapters/registry.py`](backend/app/adapters/registry.py)). Human-readable **YAML** capability examples for documentation and tooling live under [`backend/models/model_meta/`](backend/models/model_meta/) (see that folder’s README).
+2. **Monitor UI list** — optional entries under **`models`** in [`backend/config/monitor_config.json`](backend/config/monitor_config.json) control labels/descriptions shown on the monitor page (`config_loader`).
+
+### Dynamic loading
+
+**`get_adapter(model_id)`** in [`backend/app/adapters/registry.py`](backend/app/adapters/registry.py) reads `model_registry.json`, resolves paths relative to the backend root, constructs the matching adapter (with a short-lived instance cache), and falls back to **`MockAdapter`** if the entry or weights are missing. **New adapter class names** require a corresponding branch (or future dynamic import) in that factory—config alone selects among the built-in adapter types.
+
+### Example (Listing 1 — `model_registry.json`)
+
+The repository ships the following shape (see the file for optional `_comment*` fields):
+
+```json
+{
+  "models": [
+    {
+      "id": "transformer_cnn",
+      "type": "transformer_cnn",
+      "label": "Transformer-CNN Crack Forecasting",
+      "description": "Time-series forecasting model (PyTorch) trained for crack meters only. Not applicable to other sensor types unless retrained.",
+      "adapter": "TransformerCNNAdapter",
+      "path": "models/best_crack_model.pth",
+      "scaler_path": "models/scaler_all.pkl",
+      "response_scaler_path": "models/scaler_response.pkl",
+      "target_sensor": "crack",
+      "input_dim": 17,
+      "output_dim": 3,
+      "pred_steps": 6,
+      "meta_file": "models/model_meta/transformer_cnn.json"
+    }
+  ]
+}
+```
+
+After registration, call **`POST /predict`** with `model_name` set to the entry’s **`id`** and a **`history_data`** series; the service returns **`prediction`** in the standard time-indexed format.
 
 ---
 
